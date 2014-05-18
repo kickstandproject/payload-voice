@@ -1,0 +1,14 @@
+*.egg
+*.egg-info
+*.pyc
+.coverage
+.testrepository/*
+.tox
+.venv
+AUTHORS
+build/*
+ChangeLog
+cover/*
+dist/*
+doc/build/*
+etc/payloadvoice/payloadvoice.conf

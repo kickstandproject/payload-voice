@@ -1,0 +1,8 @@
+Babel>=0.9.6
+eventlet>=0.12.0
+fysom
+iso8601
+oslo.config>=1.2.0
+pbr>=0.5.21,<1.0
+python-ari
+tornado

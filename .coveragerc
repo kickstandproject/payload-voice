@@ -1,0 +1,7 @@
+[run]
+branch = True
+source = payloadvoice
+omit = payloadvoice/tests/*,payloadvoice/openstack/*
+
+[report]
+ignore-errors = True
