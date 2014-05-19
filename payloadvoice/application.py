@@ -21,6 +21,8 @@ Payload Voice Application
 from tornado.ioloop import IOLoop
 
 from payloadvoice import asterisk
+from payloadvoice import messaging
+from payloadvoice.openstack.common import context
 from payloadvoice.openstack.common import log
 
 LOG = log.getLogger(__name__)
@@ -47,6 +49,13 @@ class Application(asterisk.Connection):
         super(Application, self).__init__(state_machine)
         self.bridges = dict()
 
+    def _send_notification(self, event, payload):
+        notification = event.replace(' ', '_')
+        notification = 'payloadvoice.%s' % notification
+        notifier = messaging.get_notifier(
+            publisher_id='payloadvoice.app')
+        notifier.info(context.RequestContext(), notification, payload)
+
     def on_channel_up(self, e):
         bridge = self.client.bridges.create(type='mixing')
         self.bridges[e.channel] = bridge.id
@@ -55,11 +64,13 @@ class Application(asterisk.Connection):
 
     def on_end(self, e):
         LOG.info("Channel '%s' hungup" % e.channel)
+        self._send_notification('queue.abandon', {'channel': e.channel})
         self.client.bridges.delete(self.bridges[e.channel])
         del self.bridges[e.channel]
 
     def on_queue(self, e):
         LOG.info('Caller joined queue')
+        self._send_notification('queue.join', {'channel': e.channel})
 
     def on_start(self, e):
         self.client.channels.answer(e.channel)
