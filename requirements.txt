@@ -5,5 +5,8 @@ iso8601
 oslo.config>=1.2.0
 oslo.messaging>=1.3.0
 pbr>=0.5.21,<1.0
-python-ari
 tornado
+
+# Until python-ari is a stable release, we'll continue to consume master.
+-f http://tarballs.kickstand-project.org/python-ari/python-ari-master.tar.gz#egg=python-ari
+python-ari

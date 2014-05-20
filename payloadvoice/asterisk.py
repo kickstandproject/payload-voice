@@ -52,9 +52,10 @@ class Connection(object):
     def __init__(self, fsm):
         self._channels = dict()
         self.client = client.get_client(
-            '1', ari_url=CONF.asterisk.uri,
-            ari_username=CONF.asterisk.username,
-            ari_password=CONF.asterisk.password)
+            '1',
+            endpoint=CONF.asterisk.uri,
+            username=CONF.asterisk.username,
+            password=CONF.asterisk.password)
         self.events = event.Event(
             url=CONF.asterisk.uri, username=CONF.asterisk.username,
             password=CONF.asterisk.password, app='demo')
