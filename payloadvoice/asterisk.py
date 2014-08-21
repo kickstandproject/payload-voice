@@ -18,12 +18,15 @@
 Payload Voice ARI
 """
 
+import functools
+
 from ari import client
 from ari import event
 from fysom import Fysom
 from oslo.config import cfg
 
 from payloadvoice.openstack.common import log
+from payloadvoice.openstack.common import uuidutils
 
 ASTERISK_OPTS = [
     cfg.StrOpt(
@@ -50,6 +53,7 @@ LOG = log.getLogger(__name__)
 class Connection(object):
 
     def __init__(self, fsm):
+        self._bridges = dict()
         self._channels = dict()
         self.client = client.get_client(
             '1',
@@ -86,3 +90,25 @@ class Connection(object):
         channel = data['channel']['id']
         self._channels[channel].end(channel=channel)
         del self._channels[channel]
+
+    def answer(self, channel):
+        self.client.channels.answer(channel)
+
+    def bridge_create(self, channel):
+        uuid = uuidutils.generate_uuid()
+        self._bridges[channel] = uuid
+        func = functools.partial(
+            self._bridge_create_callback, channel=channel)
+        self.client.bridges.create(
+            uuid=uuid, type='mixing',
+            callback=func)
+
+    def bridge_delete(self, channel):
+        self.client.bridges.delete(self._bridges[channel])
+        del self._bridges[channel]
+
+    def _bridge_create_callback(self, bridge, channel):
+        self.client.bridges.add_music(
+            uuid=bridge.id)
+        self.client.bridges.add(
+            bridge.id, channel=channel)

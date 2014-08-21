@@ -57,23 +57,18 @@ class Application(asterisk.Connection):
         notifier.info(context.RequestContext(), notification, payload)
 
     def on_channel_up(self, e):
-        bridge = self.client.bridges.create(type='mixing')
-        self.bridges[e.channel] = bridge.id
-        self.client.bridges.add_music(bridge.id)
-        self.client.bridges.add(bridge.id, channel=e.channel)
+        self.bridge_create(e.channel)
+
+    def on_queue(self, e):
+        LOG.info("Channel '%s' entered bridge '%s'" % (e.channel, e.bridge))
 
     def on_end(self, e):
         LOG.info("Channel '%s' hungup" % e.channel)
-        self._send_notification('queue.abandon', {'channel': e.channel})
-        self.client.bridges.delete(self.bridges[e.channel])
-        del self.bridges[e.channel]
-
-    def on_queue(self, e):
-        LOG.info('Caller joined queue')
-        self._send_notification('queue.join', {'channel': e.channel})
+        self.bridge_delete(e.channel)
 
     def on_start(self, e):
-        self.client.channels.answer(e.channel)
+        LOG.info("Channel '%s' start" % e.channel)
+        self.answer(e.channel)
 
     def start(self):
         IOLoop.instance().start()
