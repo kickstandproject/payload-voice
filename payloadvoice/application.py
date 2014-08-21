@@ -21,8 +21,6 @@ Payload Voice Application
 from tornado.ioloop import IOLoop
 
 from payloadvoice import asterisk
-from payloadvoice import messaging
-from payloadvoice.openstack.common import context
 from payloadvoice.openstack.common import log
 
 LOG = log.getLogger(__name__)
@@ -47,14 +45,6 @@ class Application(asterisk.Connection):
             },
         }
         super(Application, self).__init__(state_machine)
-        self.bridges = dict()
-
-    def _send_notification(self, event, payload):
-        notification = event.replace(' ', '_')
-        notification = 'payloadvoice.%s' % notification
-        notifier = messaging.get_notifier(
-            publisher_id='payloadvoice.app')
-        notifier.info(context.RequestContext(), notification, payload)
 
     def on_channel_up(self, e):
         self.bridge_create(e.channel)
